@@ -4,6 +4,7 @@ package org.mcu.papermc;
 
 import com.google.gson.Gson;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -13,8 +14,10 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Objects;
 
@@ -29,57 +32,52 @@ public class McuLoginPlugin extends JavaPlugin implements Listener {
         }
     }
 
+    //    临时在线玩家列表
     HashMap<String, String> player_map = new HashMap<>();
-    String uri = "http://10980xe.mc5173.cn:10124/api";
+    String context_uri = "http://10980xe.mc5173.cn:10124/api";
 
     @Override
     public void onEnable() {
         Bukkit.getPluginManager().registerEvents(this, this);
 
-        getCommand("bind").setExecutor((sender, command, label, args) -> {
-            if (sender instanceof org.bukkit.entity.Player) {
-                org.bukkit.entity.Player player = (org.bukkit.entity.Player) sender;
-
-                if (args.length == 0) {
-                    player.sendMessage("绑定账号/bind <password> <token>");
-                    return true;
-                }
-
-                var token = args[1];
-                var password = args[0];
-
-                Response_Message response = doPost_bind_player(uri, token, player.getName(), password);
-                if (response.code == 200) {
-                    player_map.put(player.getName(), player.getAddress().getHostName());
-                }
-                player.sendMessage(response.message);
-            } else {
-                sender.sendMessage("你不是玩家!");
-            }
-            return true;
-        });
+        String uri = "http://10980xe.mc5173.cn:10124/api";
+//        加载配置文件
+        if (getConfig().contains("uri")) {
+            context_uri = getConfig().getString("uri");
+        } else {
+            getConfig().set("uri", uri);
+            saveConfig();
+        }
 
         getCommand("login").setExecutor((sender, command, label, args) -> {
-            if (sender instanceof org.bukkit.entity.Player) {
-                org.bukkit.entity.Player player = (org.bukkit.entity.Player) sender;
-
-                if (args.length == 0) {
-                    String message = "绑定登录/login <password>";
-                    player.sendMessage(message);
-                    return true;
+            if (sender instanceof Player player) {
+                Response_Message response = new Response_Message("please login first");
+                if (args.length == 1) {
+                    player.sendMessage("登录账号/login <password>");
+                    var password = args[0];
+                    response = doGet_auth(context_uri, password);
+                    if (response.code == 200) {
+                        player_map.put(player.getName(), player.getAddress().getHostName());
+                        player.sendMessage("登录账号成功");
+                    }
+                } else if (args.length == 2) {
+                    player.sendMessage("绑定账号/login <password> <token>");
+                    var token = args[1];
+                    var password = args[0];
+                    response = doPost_bind_player(context_uri, token, player.getName(), password);
+                    if (response.code == 200) {
+                        player_map.put(player.getName(), player.getAddress().getHostName());
+                        player.sendMessage("绑定账号成功");
+                    }
                 }
-                var password = args[0];
-                Response_Message response = doGet_auth(uri, password);
-                if (response.code == 200) {
-                    player_map.put(player.getName(), player.getAddress().getHostName());
+                if (response.code != 200) {
+                    player.sendMessage("非法错误");
                 }
-                player.sendMessage(response.message);
             } else {
                 sender.sendMessage("你不是玩家!");
             }
             return true;
         });
-
     }
 
     public Response_Message doGet_auth(String uri, String password) {
@@ -155,7 +153,7 @@ public class McuLoginPlugin extends JavaPlugin implements Listener {
             event.setCancelled(true);
             String message = "请登录账号/login <password>";
             event.getPlayer().sendMessage(message);
-            String message2 = "若无账户，请绑定账号/bind <password> <token>";
+            String message2 = "若无账户，请绑定账号/login <password> <token>";
             event.getPlayer().sendMessage(message2);
         }
     }
@@ -166,6 +164,7 @@ public class McuLoginPlugin extends JavaPlugin implements Listener {
         var player = event.getPlayer();
         if (!Objects.equals(player_map.get(player.getName()), player.getAddress().getHostName())) {
             player_map.remove(player.getName());
+            player.sendMessage("欢迎回来");
         }
 
 

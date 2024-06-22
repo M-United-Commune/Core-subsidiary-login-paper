@@ -1,4 +1,4 @@
-name: ExamplePlugin
+name: McuLoginPlugin
 version: 1.0.1
 main: org.mcu.papermc.McuLoginPlugin
 description: An example plugin
@@ -6,9 +6,7 @@ author: PaperMC
 website: https://papermc.io
 api-version: '1.20.5'
 commands:
-  bind:
-    description: "/bind <token>"
-    aliases: bd
   login:
-    description: "/login <password>"
-    aliases: bd
+    description: "/login <password> - Login to the server"
+    usage: "/login <password>"
+    aliases: lg
