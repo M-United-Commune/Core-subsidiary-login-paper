@@ -1,10 +1,10 @@
 name: McuLoginPlugin
-version: 1.0.1
+version: 2.0.0
 main: org.mcu.papermc.McuLoginPlugin
-description: An example plugin
+description: "MUC-paper¶Ë-¸½ÊôµÇÂ¼²å¼þ"
 author: PaperMC
 website: https://papermc.io
-api-version: '1.20.5'
+api-version: '1.20'
 commands:
   login:
     description: "/login <password> - Login to the server"

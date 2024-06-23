@@ -1,6 +1,4 @@
-// -*- coding: UTF-8 -*-
 package org.mcu.papermc;
-
 
 import com.google.gson.Gson;
 import org.bukkit.Bukkit;
@@ -14,14 +12,12 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Objects;
 
-public class McuLoginPlugin extends JavaPlugin implements Listener {
+public class MUC_PluginMain extends JavaPlugin implements Listener {
     public static class Response_Message {
         int code;
         String message;
@@ -31,8 +27,8 @@ public class McuLoginPlugin extends JavaPlugin implements Listener {
             this.message = message;
         }
     }
-
-    //    ÁÙÊ±ÔÚÏßÍæ¼ÒÁĞ±í
+ 
+    //    ä¸´æ—¶åœ¨çº¿ç©å®¶åˆ—è¡¨
     HashMap<String, String> player_map = new HashMap<>();
     String context_uri = "http://10980xe.mc5173.cn:10124/api";
 
@@ -40,8 +36,9 @@ public class McuLoginPlugin extends JavaPlugin implements Listener {
     public void onEnable() {
         Bukkit.getPluginManager().registerEvents(this, this);
 
+        this.getLogger().info("å¼€å§‹åŠ è½½MUC-paperç«¯-é™„å±ç™»å½•æ’ä»¶");
         String uri = "http://10980xe.mc5173.cn:10124/api";
-//        ¼ÓÔØÅäÖÃÎÄ¼ş
+//        åŠ è½½é…ç½®æ–‡ä»¶
         if (getConfig().contains("uri")) {
             context_uri = getConfig().getString("uri");
         } else {
@@ -53,28 +50,28 @@ public class McuLoginPlugin extends JavaPlugin implements Listener {
             if (sender instanceof Player player) {
                 Response_Message response = new Response_Message("please login first");
                 if (args.length == 1) {
-                    player.sendMessage("µÇÂ¼ÕËºÅ/login <password>");
+                    player.sendMessage("ç™»å½•è´¦å·/login <password>");
                     var password = args[0];
                     response = doGet_auth(context_uri, password);
                     if (response.code == 200) {
                         player_map.put(player.getName(), player.getAddress().getHostName());
-                        player.sendMessage("µÇÂ¼ÕËºÅ³É¹¦");
+                        player.sendMessage("ç™»å½•è´¦å·æˆåŠŸ");
                     }
                 } else if (args.length == 2) {
-                    player.sendMessage("°ó¶¨ÕËºÅ/login <password> <token>");
+                    player.sendMessage("ç»‘å®šè´¦å·/login <password> <token>");
                     var token = args[1];
                     var password = args[0];
                     response = doPost_bind_player(context_uri, token, player.getName(), password);
                     if (response.code == 200) {
                         player_map.put(player.getName(), player.getAddress().getHostName());
-                        player.sendMessage("°ó¶¨ÕËºÅ³É¹¦");
+                        player.sendMessage("ç»‘å®šè´¦å·æˆåŠŸ");
                     }
                 }
                 if (response.code != 200) {
-                    player.sendMessage("·Ç·¨´íÎó");
+                    player.sendMessage("éæ³•é”™è¯¯");
                 }
             } else {
-                sender.sendMessage("Äã²»ÊÇÍæ¼Ò!");
+                sender.sendMessage("ä½ ä¸æ˜¯ç©å®¶!");
             }
             return true;
         });
@@ -103,10 +100,10 @@ public class McuLoginPlugin extends JavaPlugin implements Listener {
                 Gson gson = new Gson();
                 return gson.fromJson(responseMessage, Response_Message.class);
             } else {
-                return new Response_Message("µÇÂ¼Ê§°Ü");
+                return new Response_Message("ç™»å½•å¤±è´¥");
             }
         } catch (IOException e) {
-            return new Response_Message("µÇÂ¼Ê§°Ü£¬ÇëÉÔºóÔÙÊÔ");
+            return new Response_Message("ç™»å½•å¤±è´¥ï¼Œè¯·ç¨åå†è¯•");
         }
     }
 
@@ -134,9 +131,9 @@ public class McuLoginPlugin extends JavaPlugin implements Listener {
                 Gson gson = new Gson();
                 return gson.fromJson(responseMessage, Response_Message.class);
             }
-            return new Response_Message("°ó¶¨ÕË»§Ê§°Ü£¬Çë¼ì²étoken");
+            return new Response_Message("ç»‘å®šè´¦æˆ·å¤±è´¥ï¼Œè¯·æ£€æŸ¥token");
         } catch (IOException e) {
-            return new Response_Message("Á¬½ÓÊ§°Ü£¬ÇëÉÔºóÔÙÊÔ");
+            return new Response_Message("è¿æ¥å¤±è´¥ï¼Œè¯·ç¨åå†è¯•");
         }
     }
 
@@ -145,15 +142,15 @@ public class McuLoginPlugin extends JavaPlugin implements Listener {
         super.onDisable();
     }
 
-    //    ¼àÌıÍæ¼ÒÒÆ¶¯
+    //    ç›‘å¬ç©å®¶ç§»åŠ¨
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent event) {
         var player = player_map.get(event.getPlayer().getName());
         if (player == null) {
             event.setCancelled(true);
-            String message = "ÇëµÇÂ¼ÕËºÅ/login <password>";
+            String message = "è¯·ç™»å½•è´¦å·/login <password>";
             event.getPlayer().sendMessage(message);
-            String message2 = "ÈôÎŞÕË»§£¬Çë°ó¶¨ÕËºÅ/login <password> <token>";
+            String message2 = "è‹¥æ— è´¦æˆ·ï¼Œè¯·ç»‘å®šè´¦å·/login <password> <token>";
             event.getPlayer().sendMessage(message2);
         }
     }
@@ -164,7 +161,7 @@ public class McuLoginPlugin extends JavaPlugin implements Listener {
         var player = event.getPlayer();
         if (!Objects.equals(player_map.get(player.getName()), player.getAddress().getHostName())) {
             player_map.remove(player.getName());
-            player.sendMessage("»¶Ó­»ØÀ´");
+            player.sendMessage("æ¬¢è¿å›æ¥");
         }
 
 
